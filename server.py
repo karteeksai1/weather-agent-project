@@ -6,9 +6,14 @@ import httpx
 
 try:
     from mcp.server.mcpserver import MCPServer
+    from mcp.server.mcpserver.exceptions import ToolError
     mcp = MCPServer("weather-data")
 except (ImportError, ModuleNotFoundError):
     from mcp.server.fastmcp import FastMCP
+    try:
+        from mcp.server.fastmcp.exceptions import ToolError
+    except ImportError:
+        ToolError = ValueError
     mcp = FastMCP("weather-data", host="127.0.0.1", port=int(os.getenv("WEATHER_MCP_PORT", os.getenv("PORT", "8001"))))
 
 PORT = int(os.getenv("WEATHER_MCP_PORT", os.getenv("PORT", "8001")))
@@ -25,7 +30,7 @@ def query(sql, params=()):
 def _city(name):
     rows = query("SELECT * FROM cities WHERE LOWER(name) = LOWER(?)", (name,))
     if not rows:
-        raise ValueError(f"Unknown city '{name}'. Call list_cities to see available cities.")
+        raise ToolError(f"Unknown city '{name}'. Call list_cities to see available cities.")
     return rows[0]
 
 
@@ -77,17 +82,20 @@ def get_city_summary(city: str, days: int = 30) -> dict:
 def get_live_weather(city: str) -> dict:
     """Fetch the current live weather for a city from the Open-Meteo API."""
     row = _city(city)
-    r = httpx.get(
-        FORECAST_URL,
-        params={
-            "latitude": row["latitude"],
-            "longitude": row["longitude"],
-            "current": "temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation",
-            "timezone": "auto",
-        },
-        timeout=15,
-    )
-    r.raise_for_status()
+    try:
+        r = httpx.get(
+            FORECAST_URL,
+            params={
+                "latitude": row["latitude"],
+                "longitude": row["longitude"],
+                "current": "temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation",
+                "timezone": "auto",
+            },
+            timeout=15,
+        )
+        r.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise ToolError(f"Failed to fetch live weather for '{city}': {exc}") from exc
     current = r.json()["current"]
     return {"city": row["name"], "time": current["time"], "temperature_c": current["temperature_2m"],
             "humidity_pct": current["relative_humidity_2m"], "wind_kmh": current["wind_speed_10m"],
