@@ -1,6 +1,7 @@
 import os
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool.mcp_toolset import McpToolset, StreamableHTTPConnectionParams
+from google.adk.tools.mcp_tool.mcp_session_manager import StreamableHTTPConnectionParams
+from google.adk.tools.mcp_tool.mcp_toolset import McpToolset
 
 MCP_URL = os.getenv("WEATHER_MCP_URL", "http://127.0.0.1:8000/mcp")
 
