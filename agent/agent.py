@@ -10,7 +10,7 @@ weather_tools = McpToolset(
 
 root_agent = LlmAgent(
     name="weather_analyst",
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     description="Answers questions about historical and live weather using the weather MCP server.",
     instruction=(
         "You are a weather analyst. Use the available tools to answer questions about "
