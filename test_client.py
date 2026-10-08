@@ -1,6 +1,16 @@
 import asyncio
+import importlib
 from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client
+
+try:
+    streamablehttp_client = importlib.import_module(
+        "mcp.client.streamable_http"
+    ).streamablehttp_client
+except (ImportError, AttributeError) as exc:
+    raise RuntimeError(
+        "The installed 'mcp' package does not expose the streamable HTTP client "
+        "expected by this script."
+    ) from exc
 
 URL = "http://127.0.0.1:8000/mcp"
 
@@ -22,7 +32,7 @@ async def main():
             ]:
                 result = await session.call_tool(name, args)
                 print(f"\n--- {name} {args}")
-                print(result.content[0].text[:400])
+                print("".join(getattr(item, "text", str(item)) for item in result.content)[:400])
 
 
 if __name__ == "__main__":
