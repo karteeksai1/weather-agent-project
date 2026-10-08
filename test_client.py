@@ -1,18 +1,7 @@
 import asyncio
-from mcp import ClientSession
-
-try:
-    from mcp.client.streamable_http import streamable_http_client
-except (ImportError, AttributeError):
-    try:
-        from mcp.client.streamable_http import streamablehttp_client as streamable_http_client
-    except (ImportError, AttributeError) as exc:
-        raise RuntimeError(
-            "The installed 'mcp' package does not expose the streamable HTTP client "
-            "expected by this script."
-        ) from exc
-
 import os
+from mcp import ClientSession
+from mcp.client.streamable_http import streamable_http_client
 
 URL = os.getenv("WEATHER_MCP_URL", "http://127.0.0.1:8001/mcp")
 
