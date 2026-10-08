@@ -3,7 +3,7 @@ from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_session_manager import StreamableHTTPConnectionParams
 from google.adk.tools.mcp_tool.mcp_toolset import McpToolset
 
-MCP_URL = os.getenv("WEATHER_MCP_URL", "http://127.0.0.1:8000/mcp")
+MCP_URL = os.getenv("WEATHER_MCP_URL", "http://127.0.0.1:8001/mcp")
 
 weather_tools = McpToolset(
     connection_params=StreamableHTTPConnectionParams(url=MCP_URL),

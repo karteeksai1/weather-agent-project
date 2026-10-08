@@ -1,13 +1,19 @@
+import os
 import sqlite3
 from contextlib import closing
 from datetime import date, timedelta
 import httpx
-from mcp.server.fastmcp import FastMCP
 
+try:
+    from mcp.server.mcpserver import MCPServer
+    mcp = MCPServer("weather-data")
+except (ImportError, ModuleNotFoundError):
+    from mcp.server.fastmcp import FastMCP
+    mcp = FastMCP("weather-data", host="127.0.0.1", port=int(os.getenv("WEATHER_MCP_PORT", os.getenv("PORT", "8001"))))
+
+PORT = int(os.getenv("WEATHER_MCP_PORT", os.getenv("PORT", "8001")))
 DB = "weather.db"
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
-
-mcp = FastMCP("weather-data", host="127.0.0.1", port=8000)
 
 
 def query(sql, params=()):
@@ -89,4 +95,7 @@ def get_live_weather(city: str) -> dict:
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    try:
+        mcp.run(transport="streamable-http", host="127.0.0.1", port=PORT)
+    except TypeError:
+        mcp.run(transport="streamable-http")
